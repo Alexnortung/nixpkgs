@@ -10436,6 +10436,8 @@ with pkgs;
 
   vit = callPackage ../applications/misc/vit { };
 
+  vitess = callPackage ../servers/sql/vitess { };
+
   viu = callPackage ../tools/graphics/viu { };
 
   vix = callPackage ../tools/misc/vix { };
