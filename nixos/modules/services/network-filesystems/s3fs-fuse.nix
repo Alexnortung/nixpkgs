@@ -50,6 +50,13 @@ in
         Whether to enable s3fs-fuse mounts.
       '');
 
+      package = mkOption {
+        type = types.package;
+        default = pkgs.s3fs;
+        defaultText = literalExpression "pkgs.s3fs-fuse";
+        description = lib.mdDoc "Which s3fs-fuse package to use.";
+      };
+
       mounts = mkOption {
         type = types.attrsOf mountModule;
         description = lib.mdDoc ''
@@ -78,7 +85,7 @@ in
                 "${pkgs.e2fsprogs}/bin/chattr +i ${mount}"  # Stop files being accidentally written to unmounted directory
               ];
               ExecStart =
-                "${pkgs.s3fs}/bin/s3fs ${bucket} ${mount} -f "
+                "${cfg.package}/bin/s3fs ${bucket} ${mount} -f "
                   + lib.concatMapStringsSep " " (opt: "-o ${opt}") options;
               ExecStopPost = "-${pkgs.fuse}/bin/fusermount -u ${mount}";
               KillMode = "process";
