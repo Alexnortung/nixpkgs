@@ -93,4 +93,8 @@ in
             };
           }) cfg.mounts;
   };
+
+  meta = {
+    maintainers = with lib.maintainers; [ alexnortung ];
+  };
 }
