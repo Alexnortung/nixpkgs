@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "armadillo";
-  version = "11.4.0";
+  version = "12.2.0";
 
   src = fetchurl {
     url = "mirror://sourceforge/arma/armadillo-${version}.tar.xz";
-    sha256 = "sha256-AWUxFSwCcppgKqbxb0ujsEdXQNXBvSjTTt1yZPR2Rhw=";
+    sha256 = "sha256-sNzgQil+hlrdM1Ha1394wsdjjWYy9YNXsBXlDty9IYY=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "C++ linear algebra library";
-    homepage = "http://arma.sourceforge.net";
+    homepage = "https://arma.sourceforge.net";
     license = licenses.asl20;
     platforms = platforms.unix;
     maintainers = with maintainers; [ juliendehos knedlsepp ];

@@ -1,21 +1,28 @@
-{ lib, buildGoModule, fetchFromGitHub, installShellFiles }:
-
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
+}:
 buildGoModule rec {
   pname = "headscale";
-  version = "0.16.4";
+  version = "0.22.1";
 
   src = fetchFromGitHub {
     owner = "juanfont";
     repo = "headscale";
     rev = "v${version}";
-    sha256 = "sha256-j5fbWxRMkYlsgL1QDEDlitKB3FOmDTy17FcuztALISw=";
+    hash = "sha256-6T4wWuhikanoQGGjVvNJak5yvgcEfhGtOmfLc2xKmms=";
   };
 
-  vendorSha256 = "sha256-RzmnAh81BN4tbzAGzJbb6CMuws8kuPJDw7aPkRRnSS8=";
+  vendorHash = "sha256-+JxS4Q6rTpdBwms2nkVDY/Kluv2qu2T0BaOIjfeX85M=";
 
-  ldflags = [ "-s" "-w" "-X github.com/juanfont/headscale/cmd/headscale/cli.Version=v${version}" ];
+  ldflags = ["-s" "-w" "-X github.com/juanfont/headscale/cmd/headscale/cli.Version=v${version}"];
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [installShellFiles];
+  checkFlags = ["-short"];
+
+  tags = ["ts2019"];
 
   postInstall = ''
     installShellCompletion --cmd headscale \
@@ -44,6 +51,6 @@ buildGoModule rec {
       Headscale implements this coordination server.
     '';
     license = licenses.bsd3;
-    maintainers = with maintainers; [ nkje jk kradalby ];
+    maintainers = with maintainers; [nkje jk kradalby misterio77 ghuntley];
   };
 }

@@ -1,13 +1,15 @@
-{ lib, stdenv, fetchurl, buildPackages, perl, coreutils
+{ lib, stdenv, fetchurl, buildPackages, perl, coreutils, writeShellScript
+, makeWrapper
 , withCryptodev ? false, cryptodev
+, withZlib ? false, zlib
 , enableSSL2 ? false
 , enableSSL3 ? false
+, enableKTLS ? stdenv.isLinux
 , static ? stdenv.hostPlatform.isStatic
-# Used to avoid cross compiling perl, for example, in darwin bootstrap tools.
-# This will cause c_rehash to refer to perl via the environment, but otherwise
-# will produce a perfectly functional openssl binary and library.
-, withPerl ? stdenv.hostPlatform == stdenv.buildPlatform
+# path to openssl.cnf file. will be placed in $etc/etc/ssl/openssl.cnf to replace the default
+, conf ? null
 , removeReferencesTo
+, testers
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -17,12 +19,12 @@
 
 let
   common = { version, sha256, patches ? [], withDocs ? false, extraMeta ? {} }:
-   stdenv.mkDerivation rec {
+   stdenv.mkDerivation (finalAttrs: {
     pname = "openssl";
     inherit version;
 
     src = fetchurl {
-      url = "https://www.openssl.org/source/${pname}-${version}.tar.gz";
+      url = "https://www.openssl.org/source/${finalAttrs.pname}-${version}.tar.gz";
       inherit sha256;
     };
 
@@ -67,12 +69,10 @@ let
       !(stdenv.hostPlatform.useLLVM or false) &&
       stdenv.cc.isGNU;
 
-    nativeBuildInputs = [ perl ]
+    nativeBuildInputs = [ makeWrapper perl ]
       ++ lib.optionals static [ removeReferencesTo ];
     buildInputs = lib.optional withCryptodev cryptodev
-      # perl is included to allow the interpreter path fixup hook to set the
-      # correct interpreter in c_rehash.
-      ++ lib.optional withPerl perl;
+      ++ lib.optional withZlib zlib;
 
     # TODO(@Ericson2314): Improve with mass rebuild
     configurePlatforms = [];
@@ -85,27 +85,24 @@ let
         x86_64-linux = "./Configure linux-x86_64";
         x86_64-solaris = "./Configure solaris64-x86_64-gcc";
         riscv64-linux = "./Configure linux64-riscv64";
-        mips64el-linux =
-          if stdenv.hostPlatform.isMips64n64
-          then "./Configure linux64-mips64"
-          else if stdenv.hostPlatform.isMips64n32
-          then "./Configure linux-mips64"
-          else throw "unsupported ABI for ${stdenv.hostPlatform.system}";
       }.${stdenv.hostPlatform.system} or (
         if stdenv.hostPlatform == stdenv.buildPlatform
           then "./config"
-        else if stdenv.hostPlatform.isBSD && stdenv.hostPlatform.isx86_64
-          then "./Configure BSD-x86_64"
-        else if stdenv.hostPlatform.isBSD && stdenv.hostPlatform.isx86_32
-          then "./Configure BSD-x86" + lib.optionalString (stdenv.hostPlatform.parsed.kernel.execFormat.name == "elf") "-elf"
         else if stdenv.hostPlatform.isBSD
-          then "./Configure BSD-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
+          then if stdenv.hostPlatform.isx86_64 then "./Configure BSD-x86_64"
+          else if stdenv.hostPlatform.isx86_32
+            then "./Configure BSD-x86" + lib.optionalString (stdenv.hostPlatform.parsed.kernel.execFormat.name == "elf") "-elf"
+          else "./Configure BSD-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
         else if stdenv.hostPlatform.isMinGW
           then "./Configure mingw${lib.optionalString
                                      (stdenv.hostPlatform.parsed.cpu.bits != 32)
                                      (toString stdenv.hostPlatform.parsed.cpu.bits)}"
         else if stdenv.hostPlatform.isLinux
-          then "./Configure linux-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
+          then if stdenv.hostPlatform.isx86_64 then "./Configure linux-x86_64"
+          else if stdenv.hostPlatform.isMips32 then "./Configure linux-mips32"
+          else if stdenv.hostPlatform.isMips64n32 then "./Configure linux-mips64"
+          else if stdenv.hostPlatform.isMips64n64 then "./Configure linux64-mips64"
+          else "./Configure linux-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
         else if stdenv.hostPlatform.isiOS
           then "./Configure ios${toString stdenv.hostPlatform.parsed.cpu.bits}-cross"
         else
@@ -130,7 +127,9 @@ let
       "-DUSE_CRYPTODEV_DIGESTS"
     ] ++ lib.optional enableSSL2 "enable-ssl2"
       ++ lib.optional enableSSL3 "enable-ssl3"
-      ++ lib.optional (lib.versionAtLeast version "3.0.0") "enable-ktls"
+      # We select KTLS here instead of the configure-time detection (which we patch out).
+      # KTLS should work on FreeBSD 13+ as well, so we could enable it if someone tests it.
+      ++ lib.optional (lib.versionAtLeast version "3.0.0" && enableKTLS) "enable-ktls"
       ++ lib.optional (lib.versionAtLeast version "1.1.1" && stdenv.hostPlatform.isAarch64) "no-afalgeng"
       # OpenSSL needs a specific `no-shared` configure flag.
       # See https://wiki.openssl.org/index.php/Compilation_and_Installation#Configure_Options
@@ -140,6 +139,7 @@ let
       # This introduces a reference to the CTLOG_FILE which is undesired when
       # trying to build binaries statically.
       ++ lib.optional static "no-ct"
+      ++ lib.optional withZlib "zlib"
       ;
 
     makeFlags = [
@@ -166,22 +166,16 @@ let
 
       # 'etc' is a separate output on static builds only.
       etc=$out
-    '') + lib.optionalString (!stdenv.hostPlatform.isWindows)
-      # Fix bin/c_rehash's perl interpreter line
-      #
-      # - openssl 1_0_2: embeds a reference to buildPackages.perl
-      # - openssl 1_1:   emits "#!/usr/bin/env perl"
-      #
-      # In the case of openssl_1_0_2, reset the invalid reference and let the
-      # interpreter hook take care of it.
-      #
-      # In both cases, if withPerl = false, the intepreter line is expected be
-      # "#!/usr/bin/env perl"
-    ''
-      substituteInPlace $out/bin/c_rehash --replace ${buildPackages.perl}/bin/perl "/usr/bin/env perl"
-    '' + ''
+    '') + ''
       mkdir -p $bin
       mv $out/bin $bin/bin
+
+      # c_rehash is a legacy perl script with the same functionality
+      # as `openssl rehash`
+      # this wrapper script is created to maintain backwards compatibility without
+      # depending on perl
+      makeWrapper $bin/bin/openssl $bin/bin/c_rehash \
+        --add-flags "rehash"
 
       mkdir $dev
       mv $out/include $dev/
@@ -190,6 +184,8 @@ let
       rm -r $etc/etc/ssl/misc
 
       rmdir $etc/etc/ssl/{certs,private}
+
+      ${lib.optionalString (conf != null) "cat ${conf} > $etc/etc/ssl/openssl.cnf"}
     '';
 
     postFixup = lib.optionalString (!stdenv.hostPlatform.isWindows) ''
@@ -201,35 +197,40 @@ let
       fi
     '';
 
+    passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     meta = with lib; {
       homepage = "https://www.openssl.org/";
       description = "A cryptographic library that implements the SSL and TLS protocols";
       license = licenses.openssl;
+      pkgConfigModules = [
+        "libcrypto"
+        "libssl"
+        "openssl"
+      ];
       platforms = platforms.all;
     } // extraMeta;
-  };
+  });
 
 in {
 
 
-  openssl_1_1 = common rec {
-    version = "1.1.1q";
-    sha256 = "sha256-15Oc5hQCnN/wtsIPDi5XAxWKSJpyslB7i9Ub+Mj9EMo=";
+  openssl_1_1 = common {
+    version = "1.1.1t";
+    sha256 = "sha256-je6bJL2x3L8MPR6bAvuPa/IhZegH9Fret8lndTaFnTs=";
     patches = [
       ./1.1/nix-ssl-cert-file.patch
 
       (if stdenv.hostPlatform.isDarwin
        then ./use-etc-ssl-certs-darwin.patch
        else ./use-etc-ssl-certs.patch)
-    ] ++ lib.optionals (stdenv.isDarwin && (builtins.substring 5 5 version) < "m") [
-      ./1.1/macos-yosemite-compat.patch
     ];
     withDocs = true;
   };
 
   openssl_3 = common {
-    version = "3.0.5";
-    sha256 = "sha256-qn2Nm+9xrWUlxVuhHl9Dl4ic5Jwsk0nc6m0+TwsCSno=";
+    version = "3.0.8";
+    sha256 = "sha256-bBPSvzj98x6sPOKjRwc2c/XWMmM5jx9p0N9KQSU+Sz4=";
     patches = [
       ./3.0/nix-ssl-cert-file.patch
 

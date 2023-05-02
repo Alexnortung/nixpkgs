@@ -25,7 +25,7 @@
 , makeWrapper
 , pandoc
 , llvmPackages
-, libyamlcpp
+, yaml-cpp
 , soci
 , postgresql
 , nodejs
@@ -85,7 +85,7 @@ in
       makeWrapper
       pandoc
       nodejs
-    ] ++ lib.optional (!server) [
+    ] ++ lib.optionals (!server) [
       copyDesktopItems
     ];
 
@@ -95,7 +95,7 @@ in
       openssl
       R
       libuuid
-      libyamlcpp
+      yaml-cpp
       soci
       postgresql
     ] ++ (if server then [
@@ -118,7 +118,7 @@ in
       "-DQUARTO_ENABLED=FALSE"
       "-DPANDOC_VERSION=${pandoc.version}"
       "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}/lib/rstudio"
-    ] ++ lib.optional (!server) [
+    ] ++ lib.optionals (!server) [
       "-DQT_QMAKE_EXECUTABLE=${qmake}/bin/qmake"
     ];
 
@@ -206,7 +206,7 @@ in
       homepage = "https://www.rstudio.com/";
       license = licenses.agpl3Only;
       maintainers = with maintainers; [ ciil cfhammill ];
-      mainProgram = "rstudio" + optionalString server "-server";
+      mainProgram = "rstudio" + lib.optionalString server "-server";
       platforms = platforms.linux;
     };
 

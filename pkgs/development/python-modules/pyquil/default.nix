@@ -12,17 +12,21 @@
 , pytest-httpx
 , pytest-mock
 , pytestCheckHook
+, pythonAtLeast
 , pythonOlder
+, pythonRelaxDepsHook
 , qcs-api-client
-, retry
 , respx
+, retry
 , rpcq
 , scipy
+, types-python-dateutil
+, types-retry
 }:
 
 buildPythonPackage rec {
   pname = "pyquil";
-  version = "3.3.1";
+  version = "3.3.4";
   format = "pyproject";
 
   disabled = pythonOlder "3.7";
@@ -30,12 +34,18 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "rigetti";
     repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-eBEv0rpM0IOaMHWjXDgF0yFK+NNr49cI8fxVi0sfbXs=";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-iHyYX9e3O611OzBMafqn4V+yR1y8y4twiJehYDYlvdg=";
   };
+
+  pythonRelaxDeps = [
+    "lark"
+    "networkx"
+  ];
 
   nativeBuildInputs = [
     poetry-core
+    pythonRelaxDepsHook
   ];
 
   propagatedBuildInputs = [
@@ -46,8 +56,14 @@ buildPythonPackage rec {
     retry
     rpcq
     scipy
+    types-python-dateutil
+    types-retry
   ] ++ lib.optionals (pythonOlder "3.8") [
     importlib-metadata
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
   checkInputs = [
@@ -55,16 +71,9 @@ buildPythonPackage rec {
     pytest-freezegun
     pytest-httpx
     pytest-mock
-    pytestCheckHook
     respx
     ipython
   ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace 'lark = "^0.11.1"' 'lark = "*"' \
-      --replace 'qcs-api-client = ">=0.8.1,<0.21.0"' 'qcs-api-client = "*"'
-  '';
 
   disabledTestPaths = [
     # Tests require network access
@@ -81,6 +90,8 @@ buildPythonPackage rec {
     "test/unit/test_reference_wavefunction.py"
     # Out-dated
     "test/unit/test_qpu_client.py"
+    "test/unit/test_qvm_client.py"
+    "test/unit/test_reference_density.py"
   ];
 
   disabledTests = [
@@ -98,6 +109,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Python library for creating Quantum Instruction Language (Quil) programs";
     homepage = "https://github.com/rigetti/pyquil";
+    changelog = "https://github.com/rigetti/pyquil/blob/v${version}/CHANGELOG.md";
     license = licenses.asl20;
     maintainers = with maintainers; [ fab ];
   };

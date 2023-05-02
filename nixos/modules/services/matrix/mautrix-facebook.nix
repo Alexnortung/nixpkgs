@@ -25,6 +25,7 @@ in {
         default = {
           homeserver = {
             address = "http://localhost:8008";
+            software = "standard";
           };
 
           appservice = rec {
@@ -95,7 +96,7 @@ in {
         type = types.nullOr types.path;
         default = null;
         description = lib.mdDoc ''
-          File containing environment variables to be passed to the mautrix-telegram service.
+          File containing environment variables to be passed to the mautrix-facebook service.
 
           Any config variable can be overridden by setting `MAUTRIX_FACEBOOK_SOME_KEY` to override the `some.key` variable.
         '';

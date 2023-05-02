@@ -10,11 +10,11 @@
 
 stdenv.mkDerivation rec {
   pname = "xz";
-  version = "5.2.6";
+  version = "5.4.2";
 
   src = fetchurl {
     url = "https://tukaani.org/xz/xz-${version}.tar.bz2";
-    sha256 = "E+NALjAbYBj2px7w5Jf3FMbRHiFK6C2rFWuBwqZKyyU=";
+    sha256 = "sha256-qkmQnL2QKMRmajX6SXX5piA+2YFU+7giPuQ++c7ul8M=";
   };
 
   strictDeps = true;
@@ -45,7 +45,8 @@ stdenv.mkDerivation rec {
       # Expect the text in format of '>xz-5.2.6.tar.bz2</a>'
       # We pick first match where a stable release goes first.
       new_version="$(curl -s https://tukaani.org/xz/ |
-          pcregrep -o1 '>xz-([0-9.]+)[.]tar[.]bz2</a>')"
+          pcregrep -o1 '>xz-([0-9.]+)[.]tar[.]bz2</a>' |
+          head -n1)"
       update-source-version ${pname} "$new_version"
     '';
   };

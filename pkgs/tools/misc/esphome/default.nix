@@ -1,8 +1,9 @@
 { lib
+, callPackage
 , python3
 , fetchFromGitHub
 , platformio
-, esptool
+, esptool_3
 , git
 }:
 
@@ -13,16 +14,16 @@ let
     };
   };
 in
-with python.pkgs; buildPythonApplication rec {
+python.pkgs.buildPythonApplication rec {
   pname = "esphome";
-  version = "2022.9.2";
+  version = "2023.4.2";
   format = "setuptools";
 
   src = fetchFromGitHub {
     owner = pname;
     repo = pname;
     rev = "refs/tags/${version}";
-    hash = "sha256-PVJZ2cOguXIh96246AVofTg1ZWqWJPFcDXlPk3Rn+Cs=";
+    hash = "sha256-ThawFY2TPDF70YCh/XJR07YJ5GhbcjFpanLo12Pj3Gk=";
   };
 
   postPatch = ''
@@ -42,7 +43,7 @@ with python.pkgs; buildPythonApplication rec {
   # They have validation functions like:
   # - validate_cryptography_installed
   # - validate_pillow_installed
-  propagatedBuildInputs = [
+  propagatedBuildInputs = with python.pkgs; [
     aioesphomeapi
     click
     colorama
@@ -52,9 +53,11 @@ with python.pkgs; buildPythonApplication rec {
     kconfiglib
     paho-mqtt
     pillow
+    platformio
     protobuf
     pyserial
     pyyaml
+    requests
     tornado
     tzdata
     tzlocal
@@ -65,16 +68,15 @@ with python.pkgs; buildPythonApplication rec {
     # platformio is used in esphomeyaml/platformio_api.py
     # esptool is used in esphomeyaml/__main__.py
     # git is used in esphomeyaml/writer.py
-    "--prefix PATH : ${lib.makeBinPath [ platformio esptool git ]}"
+    "--prefix PATH : ${lib.makeBinPath [ platformio esptool_3 git ]}"
     "--set ESPHOME_USE_SUBPROCESS ''"
   ];
 
-  checkInputs = [
+  nativeCheckInputs = with python.pkgs; [
     hypothesis
     mock
     pytest-asyncio
     pytest-mock
-    pytest-sugar
     pytestCheckHook
   ];
 
@@ -90,11 +92,12 @@ with python.pkgs; buildPythonApplication rec {
   '';
 
   passthru = {
-    dashboard = esphome-dashboard;
+    dashboard = python.pkgs.esphome-dashboard;
     updateScript = callPackage ./update.nix {};
   };
 
   meta = with lib; {
+    changelog = "https://github.com/esphome/esphome/releases/tag/${version}";
     description = "Make creating custom firmwares for ESP32/ESP8266 super easy";
     homepage = "https://esphome.io/";
     license = with licenses; [

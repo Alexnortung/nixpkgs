@@ -116,13 +116,13 @@ let
 
     in stdenv.mkDerivation rec {
       pname = "mpd";
-      version = "0.23.9";
+      version = "0.23.12";
 
       src = fetchFromGitHub {
         owner  = "MusicPlayerDaemon";
         repo   = "MPD";
         rev    = "v${version}";
-        sha256 = "sha256-eYP4+WDYwAw7TboS9V8ncdQoAC0vbjSaZxmru1Unejw=";
+        sha256 = "sha256-BnEtSkZjUBK0flVttOrjkT4RCQh9F7+MDZGm2+MMrX8=";
       };
 
       buildInputs = [
@@ -156,7 +156,7 @@ let
       # Otherwise, the meson log says:
       #
       #    Program zip found: NO
-      checkInputs = [ zip ];
+      nativeCheckInputs = [ zip ];
 
       doCheck = true;
 

@@ -6,26 +6,21 @@
 , installShellFiles
 , tinycc
 , libiconv
-, libobjc
-, Security
-, CoreServices
-, Metal
-, Foundation
-, QuartzCore
+, darwin
 , librusty_v8 ? callPackage ./librusty_v8.nix { }
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "deno";
-  version = "1.26.0";
+  version = "1.33.1";
 
   src = fetchFromGitHub {
     owner = "denoland";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-fsZcpfTrn6++/Pj0xT47H56KqADl9Zoz9hJdOY2CxEI=";
+    hash = "sha256-GQouxU48raJUXzV6IT0LSyb7z5LuICdVKD0OHqPFtGo=";
   };
-  cargoSha256 = "sha256-nn0ewG6uOOG25DmdABGUB/YRKLfC0U2SAVR5CVP1fKE=";
+  cargoHash = "sha256-PRlNp3dF9RLxmbmzD3fdso8PD/NEQIrtywHOsKcUHAA=";
 
   postPatch = ''
     # upstream uses lld on aarch64-darwin for faster builds
@@ -34,8 +29,10 @@ rustPlatform.buildRustPackage rec {
   '';
 
   nativeBuildInputs = [ installShellFiles ];
-  buildInputs = lib.optionals stdenv.isDarwin
-    [ libiconv libobjc Security CoreServices Metal Foundation QuartzCore ];
+  buildInputs = lib.optionals stdenv.isDarwin (
+    [ libiconv darwin.libobjc ] ++
+    (with darwin.apple_sdk.frameworks; [ Security CoreServices Metal Foundation QuartzCore ])
+  );
 
   buildAndTestSubdir = "cli";
 
@@ -85,6 +82,7 @@ rustPlatform.buildRustPackage rec {
   '';
 
   passthru.updateScript = ./update/update.ts;
+  passthru.tests = callPackage ./tests { };
 
   meta = with lib; {
     homepage = "https://deno.land/";

@@ -10,6 +10,7 @@ let cfg = config.services.cloud-init;
       openssh
       shadow
       util-linux
+      busybox
     ] ++ optional cfg.btrfs.enable btrfs-progs
       ++ optional cfg.ext4.enable e2fsprogs
     ;
@@ -27,7 +28,7 @@ in
 
           This configuration is not completely compatible with the
           NixOS way of doing configuration, as configuration done by
-          cloud-init might be overriden by a subsequent nixos-rebuild
+          cloud-init might be overridden by a subsequent nixos-rebuild
           call. However, some parts of cloud-init fall outside of
           NixOS's responsibility, like filesystem resizing and ssh
           public key provisioning, and cloud-init is useful for that
@@ -81,7 +82,8 @@ in
            - write-files
            - growpart
            - resizefs
-           - update_etc_hosts
+           - update_hostname
+           - resolv_conf
            - ca-certs
            - rsyslog
            - users-groups

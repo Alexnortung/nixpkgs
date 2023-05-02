@@ -19,29 +19,29 @@
 assert withIcons -> withNerdIcons == false;
 assert withNerdIcons -> withIcons == false;
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "nnn";
-  version = "4.6";
+  version = "4.8";
 
   src = fetchFromGitHub {
     owner = "jarun";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-+EAKOXZp1kxA2X3e16ItjPT7Sa3WZuP2oxOdXkceTIY=";
+    repo = "nnn";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-QbKW2wjhUNej3zoX18LdeUHqjNLYhEKyvPH2MXzp/iQ=";
   };
 
   configFile = lib.optionalString (conf != null) (builtins.toFile "nnn.h" conf);
-  preBuild = lib.optionalString (conf != null) "cp ${configFile} src/nnn.h";
+  preBuild = lib.optionalString (conf != null) "cp ${finalAttrs.configFile} src/nnn.h";
 
   nativeBuildInputs = [ installShellFiles makeWrapper pkg-config ];
   buildInputs = [ readline ncurses ] ++ lib.optional stdenv.hostPlatform.isMusl musl-fts;
 
-  NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isMusl "-I${musl-fts}/include";
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isMusl "-I${musl-fts}/include";
   NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isMusl "-lfts";
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ]
-    ++ lib.optional withIcons [ "O_ICONS=1" ]
-    ++ lib.optional withNerdIcons [ "O_NERD=1" ];
+  makeFlags = [ "PREFIX=$(out)" ]
+    ++ lib.optionals withIcons [ "O_ICONS=1" ]
+    ++ lib.optionals withNerdIcons [ "O_NERD=1" ];
 
   binPath = lib.makeBinPath [ file which ];
 
@@ -61,4 +61,4 @@ stdenv.mkDerivation rec {
     platforms = platforms.all;
     maintainers = with maintainers; [ jfrankenau Br1ght0ne ];
   };
-}
+})

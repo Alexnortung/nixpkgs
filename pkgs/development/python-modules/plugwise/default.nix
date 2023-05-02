@@ -21,7 +21,7 @@
 
 buildPythonPackage rec {
   pname = "plugwise";
-  version = "0.22.1";
+  version = "0.27.10";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
@@ -30,7 +30,7 @@ buildPythonPackage rec {
     owner = pname;
     repo = "python-plugwise";
     rev = "refs/tags/v${version}";
-    sha256 = "sha256-vgHfdfyKzabYdsHtCMXcfQexYYxw17bKjNr8wSPBFvI=";
+    hash = "sha256-KH8bhDS1niMsPZIXuHZIcnbEaywxDjvhNAGTZIdxXG4=";
   };
 
   propagatedBuildInputs = [
@@ -45,7 +45,7 @@ buildPythonPackage rec {
     semver
   ];
 
-  checkInputs = [
+  nativeCheckInputs = [
     freezegun
     jsonpickle
     mypy
@@ -63,6 +63,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Python module for Plugwise Smiles, Stretch and USB stick";
     homepage = "https://github.com/plugwise/python-plugwise";
+    changelog = "https://github.com/plugwise/python-plugwise/releases/tag/v${version}";
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ fab ];
   };

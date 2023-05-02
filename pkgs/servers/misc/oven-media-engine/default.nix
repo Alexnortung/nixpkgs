@@ -7,7 +7,7 @@
 , perl
 , openssl
 , zlib
-, ffmpeg
+, ffmpeg_4
 , libvpx
 , libopus
 , libuuid
@@ -19,21 +19,21 @@
 
 stdenv.mkDerivation rec {
   pname = "oven-media-engine";
-  version = "0.14.10";
+  version = "0.15.9";
 
   src = fetchFromGitHub {
     owner = "AirenSoft";
     repo = "OvenMediaEngine";
     rev = "v${version}";
-    sha256 = "09diqgv5pbv8igb4x9lzrmaf5ic1fd3m8y7rlpwh4w145qwjxc8y";
+    sha256 = "sha256-/sIPDP1Pa8tUpFGkbnTKFNBW1cQxc3i+8ghCpRFRDy8=";
   };
 
   sourceRoot = "source/src";
-  makeFlags = "release CONFIG_LIBRARY_PATHS= CONFIG_PKG_PATHS= GLOBAL_CC=$(CC) GLOBAL_CXX=$(CXX) GLOBAL_LD=$(CXX) SHELL=${stdenv.shell}";
+  makeFlags = [ "release" "CONFIG_LIBRARY_PATHS=" "CONFIG_PKG_PATHS=" "GLOBAL_CC=$(CC)" "GLOBAL_CXX=$(CXX)" "GLOBAL_LD=$(CXX)" "SHELL=${stdenv.shell}" ];
   enableParallelBuilding = true;
 
   nativeBuildInputs = [ bc pkg-config perl ];
-  buildInputs = [ openssl srt zlib ffmpeg libvpx libopus srtp jemalloc pcre2 libuuid hiredis ];
+  buildInputs = [ openssl srt zlib ffmpeg_4 libvpx libopus srtp jemalloc pcre2 libuuid hiredis ];
 
   preBuild = ''
     patchShebangs core/colorg++

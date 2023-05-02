@@ -5,15 +5,15 @@ buildGoModule rec {
   /* Do not use "dev" as a version. If you do, Tilt will consider itself
     running in development environment and try to serve assets from the
     source tree, which is not there once build completes.  */
-  version = "0.30.8";
+  version = "0.32.2";
 
   src = fetchFromGitHub {
     owner  = "tilt-dev";
     repo   = pname;
     rev    = "v${version}";
-    sha256 = "sha256-dVaLeooTEiKYWp9CmEcSFOunLyJecB8jR9LIKRO8b9g=";
+    sha256 = "sha256-YB/stG+7gxIaB+vMx8PwmUm4W32fCNeRnVrOvOXba5k=";
   };
-  vendorSha256 = null;
+  vendorHash = null;
 
   subPackages = [ "cmd/tilt" ];
 

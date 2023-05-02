@@ -1,18 +1,26 @@
-{ lib, stdenv, fetchurl, lua, pkg-config, nixosTests
-, tcl, which, ps
-, withSystemd ? stdenv.isLinux && !stdenv.hostPlatform.isStatic, systemd
+{ lib, stdenv, fetchurl, fetchpatch, lua, pkg-config, nixosTests
+, tcl, which, ps, getconf
+, withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd, systemd
 # dependency ordering is broken at the moment when building with openssl
 , tlsSupport ? !stdenv.hostPlatform.isStatic, openssl
 }:
 
 stdenv.mkDerivation rec {
   pname = "redis";
-  version = "7.0.5";
+  version = "7.0.11";
 
   src = fetchurl {
     url = "https://download.redis.io/releases/${pname}-${version}.tar.gz";
-    hash = "sha256-ZwVMw3tYwSXfk714AAJh7A70Q2omtA84Jix4DlYxXMM=";
+    hash = "sha256-ziUNH7oELGE944oV1AiJt498ttVGGifjUBe6ObByIeM=";
   };
+
+  patches = [
+    # Fix flaky test tests/unit/memefficiency.tcl
+    (fetchpatch {
+      url = "https://github.com/redis/redis/commit/bfe50a30edff6837897964ac3374c082b0d9e5da.patch";
+      sha256 = "sha256-0GMiygbO7LbL1rnuOByOJYE2BKUSI+yy6YH781E2zBw=";
+    })
+  ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -25,18 +33,18 @@ stdenv.mkDerivation rec {
   # It's weird that the build isn't failing because of failure to compile dependencies, it's from failure to link them!
   makeFlags = [ "PREFIX=${placeholder "out"}" ]
     ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "AR=${stdenv.cc.targetPrefix}ar" "RANLIB=${stdenv.cc.targetPrefix}ranlib" "MALLOC=libc" ]
-    ++ lib.optional withSystemd [ "USE_SYSTEMD=yes" ]
+    ++ lib.optionals withSystemd [ "USE_SYSTEMD=yes" ]
     ++ lib.optionals tlsSupport [ "BUILD_TLS=yes" ];
 
   enableParallelBuilding = true;
 
   hardeningEnable = [ "pie" ];
 
-  NIX_CFLAGS_COMPILE = lib.optionals stdenv.cc.isClang [ "-std=c11" ];
+  env.NIX_CFLAGS_COMPILE = toString (lib.optionals stdenv.cc.isClang [ "-std=c11" ]);
 
   # darwin currently lacks a pure `pgrep` which is extensively used here
   doCheck = !stdenv.isDarwin;
-  checkInputs = [ which tcl ps ];
+  nativeCheckInputs = [ which tcl ps ] ++ lib.optionals stdenv.hostPlatform.isStatic [ getconf ];
   checkPhase = ''
     runHook preCheck
 

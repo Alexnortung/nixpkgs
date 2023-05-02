@@ -19,11 +19,11 @@
 
 stdenv.mkDerivation rec {
   pname = "crow-translate";
-  version = "2.10.0";
+  version = "2.10.4";
 
   src = fetchzip {
     url = "https://github.com/${pname}/${pname}/releases/download/${version}/${pname}-${version}-source.tar.gz";
-    hash = "sha256-ayEt4PI15NjlmFrDEa6Ipbn94nN9Ga7jThnIVBWPgKw=";
+    hash = "sha256-M2vAH1YAvNOhDsz+BWxvteR8YX89FHtbUcQZr1uVoCs=";
   };
 
   patches = [

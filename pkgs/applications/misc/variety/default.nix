@@ -16,18 +16,18 @@
 , imagemagickSupport ? true
 , imagemagick
 , appindicatorSupport ? true
-, libayatana-appindicator-gtk3
+, libayatana-appindicator
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "variety";
-  version = "0.8.9";
+  version = "0.8.10";
 
   src = fetchFromGitHub {
     owner = "varietywalls";
     repo = "variety";
     rev = "refs/tags/${version}";
-    hash = "sha256-Tm8RXn2S/NDUD3JWeCHKqSFkxZPJdNMojPGnU4WEpr0=";
+    hash = "sha256-Uln0uoaEZgV9FN3HEBTeFOD7d6RkAQLgQZw7bcgu26A=";
   };
 
   nativeBuildInputs = [
@@ -44,7 +44,7 @@ python3.pkgs.buildPythonApplication rec {
     libnotify
     librsvg
   ]
-  ++ lib.optional appindicatorSupport libayatana-appindicator-gtk3;
+  ++ lib.optional appindicatorSupport libayatana-appindicator;
 
   propagatedBuildInputs = with python3.pkgs; [
     beautifulsoup4

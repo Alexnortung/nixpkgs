@@ -4,9 +4,9 @@
     "sha256": "sha256-EU6T9yQCdOLx98Io8o01rEsgxDFF/Xoy42LgPopD2/A="
   },
   "invidious": {
-    "rev": "9e58bc19c4baf7ca7da97c2f8b164789d041d9b8",
-    "sha256": "sha256-LXCwVcjXx0JQ9yOyiZCqWYkMmD5iCEe4vcuCZTX+S/Y=",
-    "version": "unstable-2022-08-13"
+    "rev": "961cae2b9a1e1dd780e3f92d55bbc7381b39ffe1",
+    "sha256": "sha256-8nt+N9WmfJQreRhVak5txZh/Rcm6kJPUt9DQgmwOB7g=",
+    "version": "unstable-2023-04-10"
   },
   "lsquic": {
     "sha256": "sha256-hG8cUvhbCNeMOsKkaJlgGpzUrIx47E/WhmPIdI5F3qM=",

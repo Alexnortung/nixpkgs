@@ -35,7 +35,8 @@ let
 
       Caddyfile-formatted = pkgs.runCommand "Caddyfile-formatted" { nativeBuildInputs = [ cfg.package ]; } ''
         mkdir -p $out
-        ${cfg.package}/bin/caddy fmt ${Caddyfile}/Caddyfile > $out/Caddyfile
+        cp --no-preserve=mode ${Caddyfile}/Caddyfile $out/Caddyfile
+        caddy fmt --overwrite $out/Caddyfile
       '';
     in
       "${if pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform then Caddyfile-formatted else Caddyfile}/Caddyfile";
@@ -289,6 +290,9 @@ in
         ${cfg.logFormat}
       }
     '';
+
+    # https://github.com/lucas-clemente/quic-go/wiki/UDP-Receive-Buffer-Size
+    boot.kernel.sysctl."net.core.rmem_max" = mkDefault 2500000;
 
     systemd.packages = [ cfg.package ];
     systemd.services.caddy = {

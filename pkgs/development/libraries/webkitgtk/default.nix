@@ -25,6 +25,7 @@
 , enchant2
 , xorg
 , libxkbcommon
+, libavif
 , libepoxy
 , at-spi2-core
 , libxml2
@@ -60,24 +61,28 @@
 , xdg-dbus-proxy
 , substituteAll
 , glib
+, unifdef
 , addOpenGLRunpath
 , enableGeoLocation ? true
 , withLibsecret ? true
-, systemdSupport ? stdenv.isLinux
+, systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd
+, testers
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "webkitgtk";
-  version = "2.38.0";
-  name = "${finalAttrs.pname}-${finalAttrs.version}+abi=${if lib.versionAtLeast gtk3.version "4.0" then "5.0" else "4.${if lib.versions.major libsoup.version == "2" then "0" else "1"}"}";
+  version = "2.40.1";
+  name = "${finalAttrs.pname}-${finalAttrs.version}+abi=${if lib.versionAtLeast gtk3.version "4.0" then "6.0" else "4.${if lib.versions.major libsoup.version == "2" then "0" else "1"}"}";
 
   outputs = [ "out" "dev" "devdoc" ];
 
-  separateDebugInfo = stdenv.isLinux;
+  # https://github.com/NixOS/nixpkgs/issues/153528
+  # Can't be linked within a 4GB address space.
+  separateDebugInfo = stdenv.isLinux && !stdenv.is32bit;
 
   src = fetchurl {
     url = "https://webkitgtk.org/releases/webkitgtk-${finalAttrs.version}.tar.xz";
-    sha256 = "sha256-+c5jdaO24TKbC2CfRpIeJifcetYiSze5Z6supkO8D70=";
+    hash = "sha256-ZOUmmE+M0hYe8DrpSa+ZwAL/Mz1hXmOGtGAWSjwbfvY=";
   };
 
   patches = lib.optionals stdenv.isLinux [
@@ -86,8 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (builtins) storeDir;
       inherit (addOpenGLRunpath) driverLink;
     })
-
-    ./libglvnd-headers.patch
 
     # Hardcode path to WPE backend
     # https://github.com/NixOS/nixpkgs/issues/110468
@@ -119,6 +122,7 @@ stdenv.mkDerivation (finalAttrs: {
     ruby
     gi-docgen
     glib # for gdbus-codegen
+    unifdef
   ] ++ lib.optionals stdenv.isLinux [
     wayland # for wayland-scanner
   ];
@@ -126,6 +130,7 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     at-spi2-core
     enchant2
+    libavif
     libepoxy
     gnutls
     gst-plugins-bad
@@ -204,28 +209,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-DENABLE_GTKDOC=OFF"
     "-DENABLE_MINIBROWSER=OFF"
     "-DENABLE_QUARTZ_TARGET=ON"
-    "-DENABLE_VIDEO=ON"
-    "-DENABLE_WEBGL=OFF"
-    "-DENABLE_WEB_AUDIO=OFF"
     "-DENABLE_X11_TARGET=OFF"
     "-DUSE_APPLE_ICU=OFF"
     "-DUSE_OPENGL_OR_ES=OFF"
-    "-DUSE_SYSTEM_MALLOC=ON"
   ] ++ lib.optionals (lib.versionAtLeast gtk3.version "4.0") [
     "-DUSE_GTK4=ON"
   ] ++ lib.optionals (!systemdSupport) [
-    "-DUSE_SYSTEMD=OFF"
+    "-DENABLE_JOURNALD_LOG=OFF"
   ] ++ lib.optionals (stdenv.isLinux && enableGLES) [
     "-DENABLE_GLES2=ON"
   ];
 
   postPatch = ''
     patchShebangs .
-  '' + lib.optionalString stdenv.isDarwin ''
-    # It needs malloc_good_size.
-    sed 22i'#include <malloc/malloc.h>' -i Source/WTF/wtf/FastMalloc.h
-    # <CommonCrypto/CommonRandom.h> needs CCCryptorStatus.
-    sed 43i'#include <CommonCrypto/CommonCryptor.h>' -i Source/WTF/wtf/RandomDevice.cpp
   '';
 
   postFixup = ''
@@ -235,10 +231,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   requiredSystemFeatures = [ "big-parallel" ];
 
+  passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
   meta = with lib; {
     description = "Web content rendering engine, GTK port";
     homepage = "https://webkitgtk.org/";
     license = licenses.bsd2;
+    pkgConfigModules = [
+      "javascriptcoregtk-4.0"
+      "webkit2gtk-4.0"
+      "webkit2gtk-web-extension-4.0"
+    ];
     platforms = platforms.linux ++ platforms.darwin;
     maintainers = teams.gnome.members;
     broken = stdenv.isDarwin;

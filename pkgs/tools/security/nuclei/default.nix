@@ -5,16 +5,16 @@
 
 buildGoModule rec {
   pname = "nuclei";
-  version = "2.7.7";
+  version = "2.9.2";
 
   src = fetchFromGitHub {
     owner = "projectdiscovery";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-61oq7h/e9aFCEwvrKRx1zyITw/X2obRsnyycO94tW0A=";
+    hash = "sha256-TGlslIWSV3cOzm+jv0MR2joSS9zpqbcTZDusa//hDRA=";
   };
 
-  vendorSha256 = "sha256-HZZutN6hG/wNBz1hy0S3kWd/LmaeAvn1NlB917xmCDo=";
+  vendorHash = "sha256-pSiODP/PYzPuEG/9H+33ZYwJBvI4zBoZNtfV5Fh8Erk=";
 
   modRoot = "./v2";
   subPackages = [
@@ -34,6 +34,7 @@ buildGoModule rec {
       CVEs across targets that are known and easily detectable.
     '';
     homepage = "https://github.com/projectdiscovery/nuclei";
+    changelog = "https://github.com/projectdiscovery/nuclei/releases/tag/v${version}";
     license = licenses.mit;
     maintainers = with maintainers; [ fab ];
   };

@@ -31,7 +31,7 @@ while (( $# > 0 )); do
 done
 
 if [[ -z "$pname" ]]; then
-    pname="$UPDATE_NIX_NAME"
+    pname="$UPDATE_NIX_PNAME"
 fi
 
 if [[ -z "$attr_path" ]]; then
@@ -54,6 +54,6 @@ fi
 tags=$(git ls-remote --tags --refs "$url")
 
 # keep only the version part of the tag
-tags=$(echo "$tags" | cut --delimiter=/ --field=3)
+tags=$(echo "$tags" | cut --delimiter=/ --field=3-)
 
 echo "$tags"

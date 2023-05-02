@@ -20,13 +20,13 @@
 
 stdenv.mkDerivation rec {
   pname = "srain";
-  version = "1.4.1";
+  version = "1.5.1";
 
   src = fetchFromGitHub {
     owner = "SrainApp";
     repo = "srain";
     rev = version;
-    sha256 = "sha256-zkSePzmbi/QnUYJO/henkxfhuN+BXTXtKGPW7M2QyBY=";
+    sha256 = "sha256-PiLjlsYmgxXpvcqDkwS/6WmTEimMH8+OndUG2Hehdm0=";
   };
 
   nativeBuildInputs = [

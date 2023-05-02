@@ -25,6 +25,7 @@
 , udev
 , libxcb
 , libxkbcommon
+, libxcrypt
 , lshw
 , mesa
 , nspr
@@ -54,11 +55,11 @@
 
 stdenv.mkDerivation rec {
   pname = "webex";
-  version = "42.7.0.22904";
+  version = "43.2.0.25211";
 
   src = fetchurl {
-    url = "https://binaries.webex.com/WebexDesktop-Ubuntu-Gold/20220907184519/Webex_ubuntu.7z";
-    sha256 = "731ec24d95243171649213b19a1709bef98846fd631f54a27d11fe16ebcc7d33";
+    url = "https://binaries.webex.com/WebexDesktop-Ubuntu-Gold/20230214022524/Webex_ubuntu.7z";
+    sha256 = "c58a0da26c8f64302cc612c60980dbd68c074d6d8a567b3d870d7d6d06b420ad";
   };
 
   buildInputs = [
@@ -91,6 +92,7 @@ stdenv.mkDerivation rec {
     udev
     libxcb
     libxkbcommon
+    libxcrypt
     libX11
     libXcomposite
     libXcursor

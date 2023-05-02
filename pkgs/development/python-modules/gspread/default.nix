@@ -9,14 +9,14 @@
 
 buildPythonPackage rec {
   pname = "gspread";
-  version = "5.5.0";
+  version = "5.8.0";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-hiDph+U0AxXyuNjSbPl+RzaoSzMloXx9m8/3BSXcMAM=";
+    hash = "sha256-+XOeK4Odf6H4pfDPDU7mjHduL79L/jFnrS6RC9WI+0Q=";
   };
 
   propagatedBuildInputs = [
@@ -35,6 +35,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Google Spreadsheets client library";
     homepage = "https://github.com/burnash/gspread";
+    changelog = "https://github.com/burnash/gspread/blob/v${version}/HISTORY.rst";
     license = licenses.mit;
     maintainers = with maintainers; [ ];
   };

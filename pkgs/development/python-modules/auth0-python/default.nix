@@ -13,22 +13,22 @@
 
 buildPythonPackage rec {
   pname = "auth0-python";
-  version = "3.23.1";
+  version = "4.1.1";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-sXEWg6zrwMs8pCSloJtLL3o7ZAXTTiMXEgI7sDaogr4=";
+    hash = "sha256-or9lrvCWBTrbRhKDs12KVIukoeo2T8Sb2sex57DfArc=";
   };
 
   propagatedBuildInputs = [
     requests
     pyjwt
-  ];
+  ] ++ pyjwt.optional-dependencies.crypto;
 
-  checkInputs = [
+  nativeCheckInputs = [
     aiohttp
     aioresponses
     callee
@@ -50,6 +50,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Auth0 Python SDK";
     homepage = "https://github.com/auth0/auth0-python";
+    changelog = "https://github.com/auth0/auth0-python/blob/${version}/CHANGELOG.md";
     license = licenses.mit;
     maintainers = with maintainers; [ costrouc ];
   };

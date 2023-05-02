@@ -1,11 +1,11 @@
 { branch ? "stable", callPackage, fetchurl, lib, stdenv }:
 let
   versions = if stdenv.isLinux then {
-    stable = "0.0.20";
-    ptb = "0.0.29";
-    canary = "0.0.139";
+    stable = "0.0.26";
+    ptb = "0.0.42";
+    canary = "0.0.151";
   } else {
-    stable = "0.0.264";
+    stable = "0.0.273";
     ptb = "0.0.59";
     canary = "0.0.283";
   };
@@ -14,18 +14,22 @@ let
     x86_64-linux = {
       stable = fetchurl {
         url = "https://dl.discordapp.net/apps/linux/${version}/discord-${version}.tar.gz";
-        sha256 = "3f7yuxigEF3e8qhCetCHKBtV4XUHsx/iYiaCCXjspYw=";
+        sha256 = "sha256-MPdNxZJBmIN4NGEoYWvL2cmNm37/YT275m2bVWHXbwY=";
       };
       ptb = fetchurl {
         url = "https://dl-ptb.discordapp.net/apps/linux/${version}/discord-ptb-${version}.tar.gz";
-        sha256 = "d78NnQZ3MkLje8mHrI6noH2iD2oEvSJ3cDnsmzQsUYc=";
+        sha256 = "ZAMyAqyFEBJeTUqQzr5wK+BOFGURqhoHL8w2hJvL0vI=";
       };
       canary = fetchurl {
         url = "https://dl-canary.discordapp.net/apps/linux/${version}/discord-canary-${version}.tar.gz";
-        sha256 = "sha256-/PfO0TWRxMrK+V1XkYmdaXQ6SfyJNBFETaR9oV90itI=";
+        sha256 = "sha256-ZN+lEGtSajgYsyMoGRmyTZCpUGVmb9LKgVv89NA4m7U=";
       };
     };
-    aarch64-darwin = {
+    x86_64-darwin = {
+      stable = fetchurl {
+        url = "https://dl.discordapp.net/apps/osx/${version}/Discord.dmg";
+        sha256 = "1vz2g83gz9ks9mxwx7gl7kys2xaw8ksnywwadrpsbj999fzlyyal";
+      };
       ptb = fetchurl {
         url = "https://dl-ptb.discordapp.net/apps/osx/${version}/DiscordPTB.dmg";
         sha256 = "sha256-LS7KExVXkOv8O/GrisPMbBxg/pwoDXIOo1dK9wk1yB8=";
@@ -35,15 +39,7 @@ let
         sha256 = "0mqpk1szp46mih95x42ld32rrspc6jx1j7qdaxf01whzb3d4pi9l";
       };
     };
-    # Stable does not (yet) provide aarch64-darwin support. PTB and Canary, however, do.
-    x86_64-darwin =
-      aarch64-darwin
-      // {
-        stable = fetchurl {
-          url = "https://dl.discordapp.net/apps/osx/${version}/Discord.dmg";
-          sha256 = "1jvlxmbfqhslsr16prsgbki77kq7i3ipbkbn67pnwlnis40y9s7p";
-        };
-      };
+    aarch64-darwin = x86_64-darwin;
   };
   src = srcs.${stdenv.hostPlatform.system}.${branch};
 
@@ -53,9 +49,8 @@ let
     downloadPage = "https://discordapp.com/download";
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
-    maintainers = with maintainers; [ MP2E devins2518 artturin infinidoge ];
-    platforms = [ "x86_64-linux" "x86_64-darwin" ]
-      ++ lib.optionals (branch != "stable") [ "aarch64-darwin" ];
+    maintainers = with maintainers; [ MP2E artturin infinidoge ];
+    platforms = [ "x86_64-linux" "x86_64-darwin" "aarch64-darwin" ];
   };
   package =
     if stdenv.isLinux
@@ -69,7 +64,7 @@ let
       (_: value:
         callPackage package (value
           // {
-          inherit src version openasar;
+          inherit src version openasar branch;
           meta = meta // { mainProgram = value.binaryName; };
         }))
       {

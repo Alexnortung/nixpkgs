@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "dex";
-  version = "2.34.0";
+  version = "2.36.0";
 
   src = fetchFromGitHub {
     owner = "dexidp";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-OML1DMIuFzoIyXtWxZW+lE/yU0B+7gx61v9CTb6MNmM=";
+    sha256 = "sha256-EIkK+X08FJKTFU4V19cGSH1yGesUfS7AibQ3zGUFyWI=";
   };
 
-  vendorSha256 = "sha256-qMkU4OQtoOYFF9vexZ+SH0E/4xo+WARIqQrbsMPm/C8=";
+  vendorHash = "sha256-Rsz7UnBlZdPRTrq3nfFaSVwok8wLDtd6aT1sEK+++vg=";
 
   subPackages = [
     "cmd/dex"

@@ -38,13 +38,13 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "crun";
-  version = "1.6";
+  version = "1.8.4";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = pname;
     rev = version;
-    sha256 = "sha256-JO07bF2Xucz8lSvj7om17a/NT0I7Vru1vayZhPDFLIw=";
+    hash = "sha256-wJ9V47X3tofFiwOzYignycm3PTRQWcAJ9iR2r5rJeJA=";
     fetchSubmodules = true;
   };
 
@@ -54,6 +54,8 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
   strictDeps = true;
+
+  NIX_LDFLAGS = "-lcriu";
 
   # we need this before autoreconfHook does its thing in order to initialize
   # config.h with the correct values
@@ -71,10 +73,11 @@ stdenv.mkDerivation rec {
   passthru.tests = { inherit (nixosTests) podman; };
 
   meta = with lib; {
+    changelog = "https://github.com/containers/crun/releases/tag/${version}";
     description = "A fast and lightweight fully featured OCI runtime and C library for running containers";
+    homepage = "https://github.com/containers/crun";
     license = licenses.gpl2Plus;
     platforms = platforms.linux;
-    inherit (src.meta) homepage;
     maintainers = with maintainers; [ ] ++ teams.podman.members;
   };
 }

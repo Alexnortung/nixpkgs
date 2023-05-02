@@ -1,22 +1,32 @@
 { lib
 , fetchFromGitHub
 , buildGoModule
+, testers
+, gh-dash
 }:
 
 buildGoModule rec {
   pname = "gh-dash";
-  version = "3.4.0";
+  version = "3.7.7";
 
   src = fetchFromGitHub {
     owner = "dlvhdr";
     repo = "gh-dash";
     rev = "v${version}";
-    sha256 = "sha256-HVGwq3v+VSViPoxeeXRz4F4iyY+auMkP9BdEombalE8=";
+    hash = "sha256-Ih9Vdt/ds8f37n7onWhvfrgMrE2iXQPwSTgxrui5TYY=";
   };
 
-  vendorSha256 = "sha256-BbrHvphTQLvUKanmO4GrNpkT0MSlY7+WMJiyXV7dFB8=";
+  vendorHash = "sha256-ZpX+0AyHFWOb75jlIS5/BqKpRkqNpE4SkOJ01CqO/0w=";
 
-  ldflags = [ "-s" "-w" ];
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/dlvhdr/gh-dash/cmd.Version=${version}"
+  ];
+
+  passthru.tests = {
+    version = testers.testVersion { package = gh-dash; };
+  };
 
   meta = {
     description = "gh extension to display a dashboard with pull requests and issues";

@@ -3,52 +3,42 @@
 , version
 , sha256Hash
 , mkOverride
-, commonOverrides
 }:
 
 { lib
 , python3
 , fetchFromGitHub
-, packageOverrides ? self: super: {}
 }:
 
-let
-  defaultOverrides = commonOverrides ++ [
-  ];
-
-  python = python3.override {
-    packageOverrides = lib.foldr lib.composeExtensions (self: super: { }) ([ packageOverrides ] ++ defaultOverrides);
-  };
-in python.pkgs.buildPythonApplication {
+python3.pkgs.buildPythonApplication {
   pname = "gns3-server";
   inherit version;
 
   src = fetchFromGitHub {
     owner = "GNS3";
     repo = "gns3-server";
-    rev = "v${version}";
+    rev = "refs/tags/v${version}";
     sha256 = sha256Hash;
   };
 
-  postPatch = ''
-    substituteInPlace requirements.txt \
-      --replace "aiohttp==" "aiohttp>=" \
-      --replace "aiofiles==" "aiofiles>=" \
-      --replace "Jinja2==" "Jinja2>=" \
-      --replace "sentry-sdk==" "sentry-sdk>=" \
-      --replace "async-timeout==" "async-timeout>=" \
-      --replace "psutil==" "psutil>=" \
-      --replace "distro==" "distro>=" \
-      --replace "py-cpuinfo==" "py-cpuinfo>=" \
-      --replace "setuptools==" "setuptools>="
-  '';
+  pythonRelaxDeps = [
+    "aiofiles"
+    "jsonschema"
+    "psutil"
+    "sentry-sdk"
+  ];
 
-  propagatedBuildInputs = with python.pkgs; [
+  nativeBuildInputs = with python3.pkgs; [
+    pythonRelaxDepsHook
+  ];
+
+  propagatedBuildInputs = with python3.pkgs; [
     aiofiles
     aiohttp
     aiohttp-cors
     async_generator
     distro
+    importlib-resources
     jinja2
     jsonschema
     multidict
@@ -79,6 +69,6 @@ in python.pkgs.buildPythonApplication {
     changelog = "https://github.com/GNS3/gns3-server/releases/tag/v${version}";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ ];
+    maintainers = with maintainers; [ anthonyroussel ];
   };
 }

@@ -6,16 +6,16 @@
 
 buildGoModule rec {
   pname = "juicefs";
-  version = "1.0.0";
+  version = "1.0.4";
 
   src = fetchFromGitHub {
     owner = "juicedata";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-urhm2dnWIbzt1mSFDsmqJe61E6D6FWRUG6CJPy/ExOI=";
+    sha256 = "sha256-Bez9wwAPDyYYECDwW9CB/ACTGUJl6PW3YiipIGY0Zbo=";
   };
 
-  vendorSha256 = "sha256-LvF/6YA/OVO2cyBM1c3YYhEjT26SVXcsepn+vglRKmE=";
+  vendorHash = "sha256-dsKNFIXcSeYUyh1TO1h1Ze3jS97pdhn2eU9hHjTARCo=";
 
   ldflags = [ "-s" "-w" ];
 

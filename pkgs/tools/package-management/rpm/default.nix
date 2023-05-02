@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
   propagatedBuildInputs = [ popt nss db bzip2 libarchive libbfd ]
     ++ lib.optional stdenv.isLinux elfutils;
 
-  NIX_CFLAGS_COMPILE = "-I${nspr.dev}/include/nspr -I${nss.dev}/include/nss";
+  env.NIX_CFLAGS_COMPILE = "-I${nspr.dev}/include/nspr -I${nss.dev}/include/nss";
 
   configureFlags = [
     "--with-external-db"
@@ -71,6 +71,6 @@ stdenv.mkDerivation rec {
     license = with licenses; [ gpl2Plus lgpl21Plus ];
     description = "The RPM Package Manager";
     maintainers = with maintainers; [ copumpkin ];
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = platforms.linux;
   };
 }

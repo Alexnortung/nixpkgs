@@ -1,8 +1,8 @@
 {
   "EncConv": {
     "owner": "Alexey-T",
-    "rev": "2022.06.19",
-    "hash": "sha256-M00rHH3dG6Vx6MEALxRNlnLLfX/rRI+rdTS7riOhgeg="
+    "rev": "2023.01.02",
+    "hash": "sha256-4/ih4sBDel2wm+YFpNcwHoOrK8AgHe3Jbqxl+CYrQFM="
   },
   "ATBinHex-Lazarus": {
     "owner": "Alexey-T",
@@ -11,33 +11,33 @@
   },
   "ATFlatControls": {
     "owner": "Alexey-T",
-    "rev": "2022.09.18",
-    "hash": "sha256-4d27eW4gpJHwGlRZ4iPzuKIw/o/J4utxXbEhglk31Bw="
+    "rev": "2023.04.26",
+    "hash": "sha256-OQOIDK3DSWQeKMjHPbJzfB35v+FQXFaoOES0luKSMc0="
   },
   "ATSynEdit": {
     "owner": "Alexey-T",
-    "rev": "2022.09.18",
-    "hash": "sha256-HjW4V7MctQoHbDYIlMv7VS0nS7FFG6Qir0sCju+isI0="
+    "rev": "2023.04.26",
+    "hash": "sha256-RD8ZmRy6jf6pUGPDI3Ft2LBYHXklxXlJXaLHjLv3usE="
   },
   "ATSynEdit_Cmp": {
     "owner": "Alexey-T",
-    "rev": "2022.09.18",
-    "hash": "sha256-yIbIRo4hpwbCdH+3fIhjnQPtdvuFmfJSqloKjWqKEuY="
+    "rev": "2023.04.26",
+    "hash": "sha256-y5+NaTTSS6GI2gLOOewQnWzfAUB1reximvqnWjavORk="
   },
   "EControl": {
     "owner": "Alexey-T",
-    "rev": "2022.08.22",
-    "hash": "sha256-o87V32HhFpCeSxhgkfKiL69oCcmpiReVmiNBPyv1kc4="
+    "rev": "2023.04.18",
+    "hash": "sha256-Eb8ynxZP3OQ7TGFZMbw8r0HXXvaoR6yotwnwK6nwZxg="
   },
   "ATSynEdit_Ex": {
     "owner": "Alexey-T",
-    "rev": "2022.09.03",
-    "hash": "sha256-6xzYn9x5tZLUhLAT9mQ4+UmpEemg386tAjlWdK8j/Ew="
+    "rev": "2023.04.17",
+    "hash": "sha256-ZCRoKuwU+DtXEEZEL2QhhwMfewQMhw+/20vVRgHpHf4="
   },
   "Python-for-Lazarus": {
     "owner": "Alexey-T",
-    "rev": "2021.10.27",
-    "hash": "sha256-ikXdDUMJ9MxRejEVAhwUsXYVh0URVFHzEpnXuN5NGpA="
+    "rev": "2023.01.02",
+    "hash": "sha256-NnPrQAqmKg3Lh16Qp/LZVS4JRtAxXi3qRovLTbzUyYQ="
   },
   "Emmet-Pascal": {
     "owner": "Alexey-T",
@@ -51,7 +51,7 @@
   },
   "bgrabitmap": {
     "owner": "bgrabitmap",
-    "rev": "v11.5.2",
-    "hash": "sha256-aGNKkLDbGTeFgFEhuX7R2BXhnllsanJmk4k+1muiSD8="
+    "rev": "v11.5.3",
+    "hash": "sha256-qjBD9TVZQy1tKWHFWkuu6vdLjASzQb3+HRy0FLdd9a8="
   }
 }

@@ -16,7 +16,7 @@ in
     package = mkOption {
       type = types.package;
       default = pkgs.grafana-agent;
-      defaultText = "pkgs.grafana-agent";
+      defaultText = lib.literalExpression "pkgs.grafana-agent";
       description = lib.mdDoc "The grafana-agent package to use.";
     };
 
@@ -49,17 +49,19 @@ in
       };
 
       default = { };
-      defaultText = ''
-        metrics = {
-          wal_directory = "\''${STATE_DIRECTORY}";
-          global.scrape_interval = "5s";
-        };
-        integrations = {
-          agent.enabled = true;
-          agent.scrape_integration = true;
-          node_exporter.enabled = true;
-          replace_instance_label = true;
-        };
+      defaultText = lib.literalExpression ''
+        {
+          metrics = {
+            wal_directory = "\''${STATE_DIRECTORY}";
+            global.scrape_interval = "5s";
+          };
+          integrations = {
+            agent.enabled = true;
+            agent.scrape_integration = true;
+            node_exporter.enabled = true;
+            replace_instance_label = true;
+          };
+        }
       '';
       example = {
         metrics.global.remote_write = [{
@@ -138,7 +140,7 @@ in
         # We can't use Environment=HOSTNAME=%H, as it doesn't include the domain part.
         export HOSTNAME=$(< /proc/sys/kernel/hostname)
 
-        exec ${cfg.package}/bin/agent -config.expand-env -config.file ${configFile}
+        exec ${lib.getExe cfg.package} -config.expand-env -config.file ${configFile}
       '';
       serviceConfig = {
         Restart = "always";

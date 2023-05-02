@@ -15,14 +15,14 @@
 
 stdenv.mkDerivation rec {
   pname = "mmlgui";
-  version = "unstable-2022-09-15";
+  version = "unstable-2023-03-19";
 
   src = fetchFromGitHub {
     owner = "superctr";
     repo = "mmlgui";
-    rev = "163cc73a7c009d524b0d5aff94f9ed47fe19e3ce";
+    rev = "59ac28c0008e227c03799cce85b77f96241159b1";
     fetchSubmodules = true;
-    sha256 = "kKo3ge2wcDK2xU1YCfEwyqw84N+3jcbOEEsJHSpMpzY=";
+    sha256 = "0CHRUizhg/WOWhDOsFqRiGu/m/U7xt5du8Uvnl7kxpU=";
   };
 
   postPatch = ''
@@ -51,7 +51,7 @@ stdenv.mkDerivation rec {
     Cocoa
   ];
 
-  checkInputs = [
+  nativeCheckInputs = [
     cppunit
   ];
 

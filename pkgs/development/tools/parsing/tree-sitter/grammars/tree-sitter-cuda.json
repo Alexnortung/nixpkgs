@@ -1,9 +1,9 @@
 {
   "url": "https://github.com/thehamsta/tree-sitter-cuda",
-  "rev": "bc48d8eaf5a145922a1bed0a69dca1342a83c12c",
-  "date": "2022-07-24T11:22:15+02:00",
-  "path": "/nix/store/xjgyflwrn6k3slzjvpy0mi1769z657li-tree-sitter-cuda",
-  "sha256": "0nd1xi5w9wjj4jbwlvwacs6b4q0syb91q06p27nc2ygs3v9wx3l7",
+  "rev": "9b1f7481a151686fce8af66da147f40388f8ee4d",
+  "date": "2023-02-22T17:21:33-08:00",
+  "path": "/nix/store/d5aqw99m6kgqf56a4sl2h5wcqdmljglh-tree-sitter-cuda",
+  "sha256": "19zn8aqfqg7y225hbb1ag50ma59adlw0l0gjbpjns0f0dbz3qr11",
   "fetchLFS": false,
   "fetchSubmodules": false,
   "deepClone": false,

@@ -10,15 +10,16 @@
 , onnxruntime
 , pandas
 , unittestCheckHook
+, pythonRelaxDepsHook
 }:
 
 buildPythonPackage rec {
   pname = "skl2onnx";
-  version = "1.13";
+  version = "1.14.0";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-XzUva5uFX/rGMFpwfwLH1Db0Nok47pBJCSqVo1ZcJz0=";
+    hash = "sha256-gF+XOgAILSlM+hU1s3Xz+zD7nPtwW9a0mOHp8rxthnY=";
   };
 
   propagatedBuildInputs = [
@@ -30,7 +31,13 @@ buildPythonPackage rec {
     onnxconverter-common
   ];
 
-  checkInputs = [
+  nativeBuildInputs = [
+    pythonRelaxDepsHook
+  ];
+
+  pythonRelaxDeps = [ "scikit-learn" ];
+
+  nativeCheckInputs = [
     onnxruntime
     pandas
     unittestCheckHook

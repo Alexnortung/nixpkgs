@@ -4,11 +4,11 @@
 
 stdenv.mkDerivation rec {
   pname = "jenkins";
-  version = "2.361.1";
+  version = "2.387.2";
 
   src = fetchurl {
     url = "https://get.jenkins.io/war-stable/${version}/jenkins.war";
-    sha256 = "1cvyj3arqzrvqd5m4plqvl6d4ra85n6kk2vzd9wqbxvhsm1jp9q8";
+    hash = "sha256-XjnLBtm56xijIYtFoHxru4Afs1O3dOtb93SfiRtQDKk=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -51,11 +51,10 @@ stdenv.mkDerivation rec {
 
       version="$(jq -r .version <<<$core_json)"
       sha256="$(jq -r .sha256 <<<$core_json)"
-      hash="$(nix-hash --type sha256 --to-base32 "$sha256")"
-      url="$(jq -r .url <<<$core_json)"
+      hash="$(nix hash to-sri --type sha256 "$sha256")"
 
       if [ ! "$oldVersion" = "$version" ]; then
-        update-source-version jenkins "$version" "$hash" "$url"
+        update-source-version jenkins "$version" "$hash"
         nixpkgs="$(git rev-parse --show-toplevel)"
         default_nix="$nixpkgs/pkgs/development/tools/continuous-integration/jenkins/default.nix"
         nixfmt "$default_nix"

@@ -53,6 +53,10 @@ let
 
     makeFlags = [
       "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
+      # binutils 2.39 regression
+      # `warning: /build/source/build/rk3399/release/bl31/bl31.elf has a LOAD segment with RWX permissions`
+      # See also: https://developer.trustedfirmware.org/T996
+      "LDFLAGS=-no-warn-rwx-segments"
     ] ++ (lib.optional (platform != null) "PLAT=${platform}")
       ++ extraMakeFlags;
 
@@ -106,6 +110,12 @@ in {
 
   armTrustedFirmwareAllwinnerH616 = buildArmTrustedFirmware rec {
     platform = "sun50i_h616";
+    extraMeta.platforms = ["aarch64-linux"];
+    filesToInstall = ["build/${platform}/release/bl31.bin"];
+  };
+
+  armTrustedFirmwareAllwinnerH6 = buildArmTrustedFirmware rec {
+    platform = "sun50i_h6";
     extraMeta.platforms = ["aarch64-linux"];
     filesToInstall = ["build/${platform}/release/bl31.bin"];
   };

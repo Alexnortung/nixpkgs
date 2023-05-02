@@ -4,6 +4,7 @@
   # Packages that provide multiple executables where one is clearly the `mainProgram`.
   "@antfu/ni" = "ni";
   "@electron-forge/cli" = "electron-forge";
+  "@microsoft/rush" = "rush";
   "@squoosh/cli" = "squoosh-cli";
   "@webassemblyjs/cli-1.11.1" = "wasm2wast";
   coffee-script = "coffee";
@@ -19,6 +20,7 @@
   "@commitlint/cli" = "commitlint";
   "@forge/cli" = "forge";
   "@gitbeaker/cli" = "gitbeaker";
+  "@githubnext/github-copilot-cli" = "github-copilot-cli";
   "@google/clasp" = "clasp";
   "@medable/mdctl-cli" = "mdctl";
   "@mermaid-js/mermaid-cli" = "mmdc";
@@ -42,6 +44,7 @@
   clubhouse-cli = "club";
   conventional-changelog-cli = "conventional-changelog";
   cpy-cli = "cpy";
+  diff2html-cli = "diff2html";
   dockerfile-language-server-nodejs = "docker-langserver";
   fast-cli = "fast";
   fauna-shell = "fauna";
@@ -57,6 +60,7 @@
   kaput-cli = "kaput";
   leetcode-cli = "leetcode";
   less = "lessc";
+  localtunnel = "lt";
   lua-fmt = "luafmt";
   markdownlint-cli = "markdownlint";
   near-cli = "near";
@@ -80,4 +84,5 @@
   vscode-json-languageserver-bin = "json-languageserver";
   vue-language-server = "vls";
   webtorrent-cli = "webtorrent";
+  "@zwave-js/server" = "zwave-server";
 }

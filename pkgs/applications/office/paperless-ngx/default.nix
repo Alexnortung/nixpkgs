@@ -1,6 +1,8 @@
 { lib
-, fetchurl
+, fetchFromGitHub
+, buildNpmPackage
 , nixosTests
+, gettext
 , python3
 , ghostscript
 , imagemagickBig
@@ -10,29 +12,24 @@
 , qpdf
 , tesseract5
 , unpaper
+, poppler_utils
 , liberation_ttf
-, fetchFromGitHub
 }:
 
 let
+  version = "1.14.2";
+
+  src = fetchFromGitHub {
+    owner = "paperless-ngx";
+    repo = "paperless-ngx";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-QpSp+8gsFApp4i4PajAQHHYZgwej/gusAw4J3Zetk4M=";
+  };
+
   # Use specific package versions required by paperless-ngx
   python = python3.override {
     packageOverrides = self: super: {
       django = super.django_4;
-
-      # use paperless-ngx version of django-q
-      # see https://github.com/paperless-ngx/paperless-ngx/pull/1014
-      django-q = super.django-q.overridePythonAttrs (oldAttrs: rec {
-        src = fetchFromGitHub {
-          owner = "paperless-ngx";
-          repo = "django-q";
-          hash = "sha256-alu7tZwUn77xhUF9c/aGmwRwO//mR/FucXjvXUl/6ek=";
-          rev = "8b5289d8caf36f67fb99448e76ead20d5b498c1b";
-        };
-        # due to paperless-ngx modification of the pyproject.toml file
-        # the patch is not needed any more
-        patches = [ ];
-      });
 
       aioredis = super.aioredis.overridePythonAttrs (oldAttrs: rec {
         version = "1.3.1";
@@ -42,9 +39,30 @@ let
         };
       });
 
-      eth-keys = super.eth-keys.overridePythonAttrs (_: {
-        doCheck = false;
+      channels = super.channels.overridePythonAttrs (oldAttrs: rec {
+        version = "3.0.5";
+        pname = "channels";
+        src = fetchFromGitHub {
+          owner = "django";
+          repo = pname;
+          rev = version;
+          sha256 = "sha256-bKrPLbD9zG7DwIYBst1cb+zkDsM8B02wh3D80iortpw=";
+        };
+        propagatedBuildInputs = oldAttrs.propagatedBuildInputs ++ [ self.daphne ];
+        pytestFlagsArray = [ "--asyncio-mode=auto" ];
       });
+
+      daphne = super.daphne.overridePythonAttrs (oldAttrs: rec {
+        version = "3.0.2";
+        pname = "daphne";
+        src = fetchFromGitHub {
+          owner = "django";
+          repo = pname;
+          rev = version;
+          hash = "sha256-KWkMV4L7bA2Eo/u4GGif6lmDNrZAzvYyDiyzyWt9LeI=";
+        };
+      });
+
     };
   };
 
@@ -57,55 +75,92 @@ let
     qpdf
     tesseract5
     unpaper
+    poppler_utils
   ];
-in
-python.pkgs.pythonPackages.buildPythonApplication rec {
-  pname = "paperless-ngx";
-  version = "1.9.1";
 
-  # Fetch the release tarball instead of a git ref because it contains the prebuilt fontend
-  src = fetchurl {
-    url = "https://github.com/paperless-ngx/paperless-ngx/releases/download/v${version}/${pname}-v${version}.tar.xz";
-    hash = "sha256-KWq3zUES8klXexNO9krlqZKZEajOhkTHF13t/3rxrPc=";
+  frontend = buildNpmPackage {
+    pname = "paperless-ngx-frontend";
+    inherit version src;
+
+    npmDepsHash = "sha256-wUlybMxnXLNmeu2z+RFFOHVEhH12XD3ZfMo5K+HSBpY=";
+
+    nativeBuildInputs = [
+      python3
+    ];
+
+    postPatch = ''
+      cd src-ui
+    '';
+
+    CYPRESS_INSTALL_BINARY = "0";
+    NG_CLI_ANALYTICS = "false";
+
+    npmBuildFlags = [
+      "--" "--configuration" "production"
+    ];
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib/paperless-ui
+      mv ../src/documents/static/frontend $out/lib/paperless-ui/
+      runHook postInstall
+    '';
   };
-
+in
+python.pkgs.buildPythonApplication rec {
+  pname = "paperless-ngx";
   format = "other";
 
-  propagatedBuildInputs = with python.pkgs.pythonPackages; [
+  inherit version src;
+
+  nativeBuildInputs = [
+    gettext
+  ];
+
+  propagatedBuildInputs = with python.pkgs; [
     aioredis
-    arrow
+    amqp
+    anyio
     asgiref
     async-timeout
     attrs
     autobahn
     automat
-    blessed
+    billiard
+    bleach
+    celery
     certifi
     cffi
     channels-redis
     channels
-    chardet
+    charset-normalizer
     click
+    click-didyoumean
+    click-plugins
+    click-repl
     coloredlogs
     concurrent-log-handler
     constantly
     cryptography
     daphne
     dateparser
+    django-celery-results
     django-cors-headers
+    django-compression-middleware
     django-extensions
     django-filter
-    django-picklefield
-    django-q
+    django-guardian
+    django-ipware
     django
+    djangorestframework-guardian2
     djangorestframework
     filelock
-    fuzzywuzzy
     gunicorn
     h11
     hiredis
     httptools
     humanfriendly
+    humanize
     hyperlink
     idna
     imap-tools
@@ -115,11 +170,13 @@ python.pkgs.pythonPackages.buildPythonApplication rec {
     inotifyrecursive
     joblib
     langdetect
-    pkgs.libmysqlclient
     lxml
     msgpack
+    mysqlclient
+    nltk
     numpy
     ocrmypdf
+    packaging
     pathvalidate
     pdf2image
     pdfminer-six
@@ -127,6 +184,7 @@ python.pkgs.pythonPackages.buildPythonApplication rec {
     pillow
     pluggy
     portalocker
+    prompt-toolkit
     psycopg2
     pyasn1-modules
     pyasn1
@@ -135,11 +193,11 @@ python.pkgs.pythonPackages.buildPythonApplication rec {
     python-dateutil
     python-dotenv
     python-gnupg
-    python-Levenshtein
     python-magic
     pytz
     pyyaml
     pyzbar
+    rapidfuzz
     redis
     regex
     reportlab
@@ -147,59 +205,78 @@ python.pkgs.pythonPackages.buildPythonApplication rec {
     scikit-learn
     scipy
     service-identity
-    six
-    sortedcontainers
+    setproctitle
+    sniffio
     sqlparse
     threadpoolctl
     tika
+    tornado
     tqdm
-    twisted.optional-dependencies.tls
+    twisted
     txaio
+    tzdata
     tzlocal
     urllib3
     uvicorn
     uvloop
+    vine
     watchdog
-    watchgod
+    watchfiles
     wcwidth
+    webencodings
     websockets
     whitenoise
     whoosh
+    zipp
     zope_interface
-  ];
+    zxing_cpp
+  ]
+  ++ redis.optional-dependencies.hiredis
+  ++ twisted.optional-dependencies.tls
+  ++ uvicorn.optional-dependencies.standard;
 
-  # paperless-ngx includes the bundled django-q version. This will
-  # conflict with the tests and is not needed since we overrode the
-  # django-q version with the paperless-ngx version
-  postPatch = ''
-    rm -rf src/django-q
-  '';
-
-  # Compile manually because `pythonRecompileBytecodeHook` only works for
-  # files in `python.sitePackages`
   postBuild = ''
-    ${python.interpreter} -OO -m compileall src
+    # Compile manually because `pythonRecompileBytecodeHook` only works
+    # for files in `python.sitePackages`
+    ${python.pythonForBuild.interpreter} -OO -m compileall src
+
+    # Collect static files
+    ${python.pythonForBuild.interpreter} src/manage.py collectstatic --clear --no-input
+
+    # Compile string translations using gettext
+    ${python.pythonForBuild.interpreter} src/manage.py compilemessages
   '';
 
   installPhase = ''
-    mkdir -p $out/lib
-    cp -r . $out/lib/paperless-ngx
+    mkdir -p $out/lib/paperless-ngx
+    cp -r {src,static,LICENSE,gunicorn.conf.py} $out/lib/paperless-ngx
+    ln -s ${frontend}/lib/paperless-ui/frontend $out/lib/paperless-ngx/static/
     chmod +x $out/lib/paperless-ngx/src/manage.py
     makeWrapper $out/lib/paperless-ngx/src/manage.py $out/bin/paperless-ngx \
       --prefix PYTHONPATH : "$PYTHONPATH" \
       --prefix PATH : "${path}"
+    makeWrapper ${python.pkgs.celery}/bin/celery $out/bin/celery \
+      --prefix PYTHONPATH : "$PYTHONPATH:$out/lib/paperless-ngx/src" \
+      --prefix PATH : "${path}"
   '';
 
-  checkInputs = with python.pkgs.pythonPackages; [
+  postFixup = ''
+    # Remove tests with samples (~14M)
+    find $out/lib/paperless-ngx -type d -name tests -exec rm -rv {} +
+  '';
+
+  nativeCheckInputs = with python.pkgs; [
+    factory_boy
+    imagehash
     pytest-django
     pytest-env
-    pytest-sugar
     pytest-xdist
-    factory_boy
     pytestCheckHook
   ];
 
-  pytestFlagsArray = [ "src" ];
+  pytestFlagsArray = [
+    "src"
+  ];
 
   # The tests require:
   # - PATH with runtime binaries
@@ -212,17 +289,30 @@ python.pkgs.pythonPackages.buildPythonApplication rec {
 
     # Disable unneeded code coverage test
     substituteInPlace src/setup.cfg \
-      --replace "--cov --cov-report=html" ""
+      --replace "--cov --cov-report=html --cov-report=xml" ""
+    # OCR on NixOS recognizes the space in the picture, upstream CI doesn't.
+    # See https://github.com/paperless-ngx/paperless-ngx/pull/2216
+    substituteInPlace src/paperless_tesseract/tests/test_parser.py \
+      --replace "this is awebp document" "this is a webp document"
   '';
 
+  disabledTests = [
+    # FileNotFoundError(2, 'No such file or directory'): /build/tmp...
+    "test_script_with_output"
+    # AssertionError: 10 != 4 (timezone/time issue)
+    # Due to getting local time from modification date in test_consumer.py
+    "testNormalOperation"
+  ];
+
   passthru = {
-    inherit python path;
+    inherit python path frontend;
     tests = { inherit (nixosTests) paperless; };
   };
 
   meta = with lib; {
-    description = "A supercharged version of paperless: scan, index, and archive all of your physical documents";
-    homepage = "https://paperless-ngx.readthedocs.io/en/latest/";
+    description = "Tool to scan, index, and archive all of your physical documents";
+    homepage = "https://docs.paperless-ngx.com/";
+    changelog = "https://github.com/paperless-ngx/paperless-ngx/releases/tag/v${version}";
     license = licenses.gpl3Only;
     maintainers = with maintainers; [ lukegb gador erikarvstedt ];
   };

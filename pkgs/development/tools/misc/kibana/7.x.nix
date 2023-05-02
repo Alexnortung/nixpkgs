@@ -4,16 +4,15 @@
 , stdenv
 , makeWrapper
 , fetchurl
-, nodejs-16_x
+, nodejs_16
 , coreutils
 , which
 }:
 
-with lib;
 let
-  nodejs = nodejs-16_x;
+  nodejs = nodejs_16;
   inherit (builtins) elemAt;
-  info = splitString "-" stdenv.hostPlatform.system;
+  info = lib.splitString "-" stdenv.hostPlatform.system;
   arch = elemAt info 0;
   plat = elemAt info 1;
   shas =
@@ -50,7 +49,7 @@ in stdenv.mkDerivation rec {
     sed -i 's@NODE=.*@NODE=${nodejs}/bin/node@' $out/libexec/kibana/bin/kibana
   '';
 
-  meta = {
+  meta = with lib; {
     description = "Visualize logs and time-stamped data";
     homepage = "http://www.elasticsearch.org/overview/kibana";
     license = licenses.elastic;

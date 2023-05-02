@@ -6,6 +6,7 @@
 , cmdliner
 , core
 , core_bench
+, core_unix ? null
 , js_of_ocaml
 , js_of_ocaml-ppx
 , ppx_deriving_yojson
@@ -28,21 +29,24 @@ let
 in
 buildDunePackage rec {
   pname = "mldoc";
-  version = "1.4.8";
+  version = "1.5.2";
 
   minimalOCamlVersion = "4.10";
+
+  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "logseq";
     repo = "mldoc";
     rev = "v${version}";
-    sha256 = "sha256-263/TQ8+Ihv6bCWnq4hA5Yk6mtokb3312dJrJ8U1QQs=";
+    hash = "sha256-FiBlgTTGL5TQkbhpkOCKtBgDDxDs4S88Ps+XAHcNsJ4=";
   };
 
   buildInputs = [
     cmdliner
     core
     core_bench
+    core_unix
     js_of_ocaml
     js_of_ocaml-ppx
     lwt

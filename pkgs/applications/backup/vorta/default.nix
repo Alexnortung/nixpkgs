@@ -8,19 +8,18 @@
 
 python3Packages.buildPythonApplication rec {
   pname = "vorta";
-  version = "0.8.7";
+  version = "0.8.12";
 
   src = fetchFromGitHub {
     owner = "borgbase";
     repo = "vorta";
-    rev = "refs/tags/v${version}";
-    sha256 = "sha256-9SfHZbNM+lRtwLO/0dE9C4cHb3pSPkxBUITYNEdPMQw=";
+    rev = "v${version}";
+    hash = "sha256-nLdLTh1qSKvOR2cE9HWQrIWQ9L+ynX4qF+lTtKn/Ubs=";
   };
 
   nativeBuildInputs = [ wrapQtAppsHook ];
 
   propagatedBuildInputs = with python3Packages; [
-    paramiko
     peewee
     pyqt5
     python-dateutil
@@ -29,6 +28,9 @@ python3Packages.buildPythonApplication rec {
     secretstorage
     appdirs
     setuptools
+    platformdirs
+  ] ++ lib.optionals stdenv.isLinux [
+    qt5.qtwayland
   ];
 
   postPatch = ''
@@ -52,7 +54,7 @@ python3Packages.buildPythonApplication rec {
     )
   '';
 
-  checkInputs = with python3Packages; [
+  nativeCheckInputs = with python3Packages; [
     pytest-qt
     pytest-mock
     pytestCheckHook
@@ -84,10 +86,11 @@ python3Packages.buildPythonApplication rec {
   ];
 
   meta = with lib; {
-    license = licenses.gpl3Only;
-    homepage = "https://vorta.borgbase.com/";
-    maintainers = with maintainers; [ ma27 ];
+    changelog = "https://github.com/borgbase/vorta/releases/tag/v0.8.10";
     description = "Desktop Backup Client for Borg";
+    homepage = "https://vorta.borgbase.com/";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ ma27 ];
     platforms = platforms.linux;
   };
 }

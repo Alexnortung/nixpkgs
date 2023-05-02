@@ -6,11 +6,11 @@
 
 stdenv.mkDerivation rec {
   pname = "subread";
-  version = "2.0.3";
+  version = "2.0.5";
 
   src = fetchurl {
     url = "mirror://sourceforge/subread/subread-${version}/subread-${version}-source.tar.gz";
-    sha256 = "sha256-Vs7zovkU1DJxMGnVwoL0iDHDoezIlDKtVYDKoyKl9Ws=";
+    sha256 = "sha256-frZzd+IV4IxfPK44PWOgV9yPRPoUB3smPbxoDchbaSc=";
   };
 
   buildInputs = [
@@ -35,7 +35,7 @@ stdenv.mkDerivation rec {
     license = licenses.gpl3;
     maintainers = with maintainers; [ jbedo ];
     platforms = [ "x86_64-darwin" "x86_64-linux" ];
-    homepage = "http://subread.sourceforge.net/";
+    homepage = "https://subread.sourceforge.net/";
   };
 
 }

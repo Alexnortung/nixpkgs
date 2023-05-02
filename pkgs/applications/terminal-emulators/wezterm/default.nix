@@ -26,18 +26,19 @@
 , UserNotifications
 , nixosTests
 , runCommand
+, vulkan-loader
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "wezterm";
-  version = "20220905-102802-7d4b8249";
+  version = "20230408-112425-69ae8472";
 
   src = fetchFromGitHub {
     owner = "wez";
     repo = pname;
     rev = version;
     fetchSubmodules = true;
-    sha256 = "sha256-Xvi0bluLM4F3BFefIPhkhTF3dmRvP8u+qV70Rz4CGKI=";
+    hash = "sha256-Uk6I/JtSkGCQGG95DDD1hsu40X00/k5d44WP3OJ+rn4=";
   };
 
   postPatch = ''
@@ -47,7 +48,13 @@ rustPlatform.buildRustPackage rec {
     rm -r wezterm-ssh/tests
   '';
 
-  cargoSha256 = "sha256-XJAeMDwtLtBzHMU/cb3lZgmcw5F3ifjKzKVmuP85/RY=";
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+    outputHashes = {
+      "image-0.24.5" = "sha256-fTajVwm88OInqCPZerWcSAm1ga46ansQ3EzAmbT58Js=";
+      "xcb-imdkit-0.2.0" = "sha256-QOT9HLlA26DVPUF4ViKH2ckexUsu45KZMdJwoUhW+hA=";
+    };
+  };
 
   nativeBuildInputs = [
     installShellFiles
@@ -97,7 +104,10 @@ rustPlatform.buildRustPackage rec {
   '';
 
   preFixup = lib.optionalString stdenv.isLinux ''
-    patchelf --add-needed "${libGL}/lib/libEGL.so.1" $out/bin/wezterm-gui
+    patchelf \
+      --add-needed "${libGL}/lib/libEGL.so.1" \
+      --add-needed "${vulkan-loader}/lib/libvulkan.so.1" \
+      $out/bin/wezterm-gui
   '' + lib.optionalString stdenv.isDarwin ''
     mkdir -p "$out/Applications"
     OUT_APP="$out/Applications/WezTerm.app"
@@ -114,9 +124,7 @@ rustPlatform.buildRustPackage rec {
     };
     terminfo = runCommand "wezterm-terminfo"
       {
-        nativeBuildInputs = [
-          ncurses
-        ];
+        nativeBuildInputs = [ ncurses ];
       } ''
       mkdir -p $out/share/terminfo $out/nix-support
       tic -x -o $out/share/terminfo ${src}/termwiz/data/wezterm.terminfo
@@ -124,10 +132,9 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = with lib; {
-    description = "A GPU-accelerated cross-platform terminal emulator and multiplexer written by @wez and implemented in Rust";
+    description = "GPU-accelerated cross-platform terminal emulator and multiplexer written by @wez and implemented in Rust";
     homepage = "https://wezfurlong.org/wezterm";
     license = licenses.mit;
-    maintainers = with maintainers; [ SuperSandro2000 ];
-    platforms = platforms.unix;
+    maintainers = with maintainers; [ SuperSandro2000 mimame ];
   };
 }
