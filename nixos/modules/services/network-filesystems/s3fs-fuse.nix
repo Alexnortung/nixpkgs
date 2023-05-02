@@ -26,6 +26,15 @@ let
         '';
       };
 
+      useChattr = mkOption {
+        type = types.bool;
+        default = false;
+        description = lib.mdDoc ''
+          Whether to use chattr to make the mount point immutable.
+          This is useful to prevent files being written to the mount point when it is not mounted.
+        '';
+      };
+
       options = mkOption {
         type = types.listOf types.str;
         description = lib.mdDoc ''
@@ -64,15 +73,6 @@ in
           The name of the attribute is only used for naming the running service.
         '';
       };
-
-      useChattr = mkOption {
-        type = types.bool;
-        default = true;
-        description = lib.mdDoc ''
-          Whether to use chattr to make the mount point immutable.
-          This is useful to prevent files being written to the mount point when it is not mounted.
-        '';
-      };
     };
   };
 
@@ -93,9 +93,9 @@ in
             serviceConfig = {
               ExecStartPre = [
                 "${pkgs.coreutils}/bin/mkdir -m 0500 -pv ${mount}"
-              ] ++ optional cfg.useChattr [
+              ] ++ optional mountSet.useChattr (
                 "${pkgs.e2fsprogs}/bin/chattr +i ${mount}" # make mount point immutable so that it is not accidentally deleted
-              ];
+              );
               ExecStart =
                 "${cfg.package}/bin/s3fs ${bucket} ${mount} -f "
                 + lib.concatMapStringsSep " " (opt: "-o ${opt}") options;
