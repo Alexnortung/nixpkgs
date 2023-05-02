@@ -36,7 +36,7 @@ let
             "passwd_file=/root/.passwd-s3fs"
             "use_path_request_style"
             "allow_other"
-            "url=https://ap-south-1.linodeobjects.com/" # Linode object storage
+            "url=https://s3.example.com/"
           ]
         '';
       };
