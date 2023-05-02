@@ -64,34 +64,47 @@ in
           The name of the attribute is only used for naming the running service.
         '';
       };
+
+      useChattr = mkOption {
+        type = types.bool;
+        default = true;
+        description = lib.mdDoc ''
+          Whether to use chattr to make the mount point immutable.
+          This is useful to prevent files being written to the mount point when it is not mounted.
+        '';
+      };
     };
   };
 
   config = mkIf cfg.enable {
 
-    systemd.services = mapAttrs' (name: mountSet:
-      let
-        mount = mountSet.mountPoint;
-        bucket = mountSet.bucket;
-        options = mountSet.options;
-      in
+    systemd.services = mapAttrs'
+      (name: mountSet:
+        let
+          mount = mountSet.mountPoint;
+          bucket = mountSet.bucket;
+          options = mountSet.options;
+        in
         nameValuePair
-          "s3fs-${name}" {
+          "s3fs-${name}"
+          {
             description = "S3FS mount";
             wantedBy = [ "multi-user.target" ];
             serviceConfig = {
               ExecStartPre = [
                 "${pkgs.coreutils}/bin/mkdir -m 0500 -pv ${mount}"
-                "${pkgs.e2fsprogs}/bin/chattr +i ${mount}"  # Stop files being accidentally written to unmounted directory
+              ] ++ optional cfg.useChattr [
+                "${pkgs.e2fsprogs}/bin/chattr +i ${mount}" # make mount point immutable so that it is not accidentally deleted
               ];
               ExecStart =
                 "${cfg.package}/bin/s3fs ${bucket} ${mount} -f "
-                  + lib.concatMapStringsSep " " (opt: "-o ${opt}") options;
+                + lib.concatMapStringsSep " " (opt: "-o ${opt}") options;
               ExecStopPost = "-${pkgs.fuse}/bin/fusermount -u ${mount}";
               KillMode = "process";
               Restart = "on-failure";
             };
-          }) cfg.mounts;
+          })
+      cfg.mounts;
   };
 
   meta = {
