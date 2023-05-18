@@ -1,5 +1,3 @@
-# Inspired by: https://discourse.nixos.org/t/how-to-setup-s3fs-mount/6283/2
-
 { config, lib, pkgs, ... }:
 
 with lib;
