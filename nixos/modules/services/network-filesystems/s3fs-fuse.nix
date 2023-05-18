@@ -93,8 +93,7 @@ in
               ] ++ optional mountSet.useChattr (
                 "${pkgs.e2fsprogs}/bin/chattr +i ${mount}" # make mount point immutable so that it is not accidentally deleted
               );
-              ExecStart =
-                "${cfg.package}/bin/s3fs ${bucket} ${mount} -f "
+              ExecStart = "${cfg.package}/bin/s3fs ${bucket} ${mount} -f "
                 + lib.concatMapStringsSep " " (opt: "-o ${opt}") options;
               ExecStopPost = "-${pkgs.fuse}/bin/fusermount -u ${mount}";
               KillMode = "process";
