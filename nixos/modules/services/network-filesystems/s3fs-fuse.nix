@@ -80,8 +80,7 @@ in
       (name: mountSet:
         let
           mount = mountSet.mountPoint;
-          bucket = mountSet.bucket;
-          options = mountSet.options;
+          inherit (mountSet) bucket options;
         in
         nameValuePair
           "s3fs-${name}"
